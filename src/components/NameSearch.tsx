@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Search, ArrowRight, User, Sparkles } from 'lucide-react';
 import namedaysData from '../data/namedays.json';
 
