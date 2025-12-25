@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 
 // Importy komponentów
 import DailyCard from './components/DailyCard';
@@ -17,10 +17,7 @@ function App() {
   // Stan widoku
   const [currentView, setCurrentView] = useState<ViewState>('home');
 
-  // Stan notatek
-  const [newNote, setNewNote] = useState('');
-  const dateKey = currentDate.toISOString().split('T')[0];
-
+  
   // Opcje Astro
   const [viewOptions, setViewOptions] = useState({
     showMoon: false,
@@ -64,28 +61,7 @@ function App() {
     setCurrentView('home'); 
   };
 
-  // --- LOGIKA NOTATEK ---
-  const saveNote = () => {
-    if (!newNote.trim()) return;
-    
-    const savedNotes = JSON.parse(localStorage.getItem('user_notes') || '{}');
-    const dayNotes = savedNotes[dateKey] || [];
-    
-    savedNotes[dateKey] = [...dayNotes, newNote.trim()];
-    localStorage.setItem('user_notes', JSON.stringify(savedNotes));
-    
-    setNewNote('');
-    // Odświeżenie stanu daty wymusza przeładowanie notatek w DailyCard
-    setCurrentDate(new Date(currentDate)); 
-  };
-
-  const clearNotes = () => {
-    const savedNotes = JSON.parse(localStorage.getItem('user_notes') || '{}');
-    delete savedNotes[dateKey];
-    localStorage.setItem('user_notes', JSON.stringify(savedNotes));
-    setCurrentDate(new Date(currentDate));
-  };
-
+ 
   return (
     <Layout 
       onNavigate={setCurrentView} 
