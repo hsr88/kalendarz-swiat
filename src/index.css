@@ -1,5 +1,6 @@
-@import "tailwindcss";
-
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 @theme {
   /* To wymusza na Tailwind v4 obsługę selektora .dark */
   --variant-dark: .dark &;
