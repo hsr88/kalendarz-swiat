@@ -39,7 +39,9 @@ useEffect(() => {
     root.classList.remove('dark');
   }
 }, [isDarkMode]);
-
+useEffect(() => {
+  localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+}, [isDarkMode]);
   const toggleDarkMode = () => setIsDarkMode(prev => !prev);
 
   // --- FUNKCJE POMOCNICZE ---
