@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  // Dodajemy tę linię, aby sterować trybem ciemnym za pomocą klasy
+ // To jest najważniejsza linia:
   darkMode: 'class', 
   content: [
     "./index.html",
