@@ -1,7 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+@custom-variant dark (&:where(.dark, .dark *));
 :root {
   font-family: 'Outfit', sans-serif;
   color: #1e293b; /* Slate-800 - ciemny szary tekst dla lepszego kontrastu */
