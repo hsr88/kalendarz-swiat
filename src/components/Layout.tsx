@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Menu, 
   X, 
@@ -38,6 +38,28 @@ const Layout: React.FC<LayoutProps> = ({
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+ useEffect(() => {
+  if (isSidebarOpen) {
+    // Zapisujemy aktualną pozycję scrolla
+    const scrollY = window.scrollY;
+    
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+  } else {
+    // Przywracamy pozycję scrolla po zamknięciu
+    const scrollY = document.body.style.top;
+    
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    
+    if (scrollY) {
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
+    }
+  }
+}, [isSidebarOpen]);
+    
   const handleNavigate = (view: ViewState) => {
     onNavigate(view);
     setIsSidebarOpen(false);
