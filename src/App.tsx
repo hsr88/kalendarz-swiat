@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus, Trash2 } from 'lucide-react';
 
 // Importy komponentów
 import DailyCard from './components/DailyCard';
@@ -10,11 +10,18 @@ import UnusualHolidays from './components/UnusualHolidays';
 import Layout, { type ViewState } from './components/Layout';
 
 function App() {
+  // Stan daty i kalendarza
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(true);
+  
+  // Stan widoku
   const [currentView, setCurrentView] = useState<ViewState>('home');
 
-  // Stan opcji astro
+  // Stan notatek
+  const [newNote, setNewNote] = useState('');
+  const dateKey = currentDate.toISOString().split('T')[0];
+
+  // Opcje Astro
   const [viewOptions, setViewOptions] = useState({
     showMoon: false,
     showZodiac: false,
@@ -28,17 +35,19 @@ function App() {
   });
 
   useEffect(() => {
+    const root = window.document.documentElement;
     if (isDarkMode) {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
       localStorage.setItem('theme', 'dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
       localStorage.setItem('theme', 'light');
     }
   }, [isDarkMode]);
 
-  const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
-  // -----------------------------
+  const toggleDarkMode = () => setIsDarkMode(prev => !prev);
+
+  // --- FUNKCJE POMOCNICZE ---
 
   const toggleOption = (key: keyof typeof viewOptions) => {
     setViewOptions(prev => ({ ...prev, [key]: !prev[key] }));
@@ -55,6 +64,28 @@ function App() {
     setCurrentView('home'); 
   };
 
+  // --- LOGIKA NOTATEK ---
+  const saveNote = () => {
+    if (!newNote.trim()) return;
+    
+    const savedNotes = JSON.parse(localStorage.getItem('user_notes') || '{}');
+    const dayNotes = savedNotes[dateKey] || [];
+    
+    savedNotes[dateKey] = [...dayNotes, newNote.trim()];
+    localStorage.setItem('user_notes', JSON.stringify(savedNotes));
+    
+    setNewNote('');
+    // Odświeżenie stanu daty wymusza przeładowanie notatek w DailyCard
+    setCurrentDate(new Date(currentDate)); 
+  };
+
+  const clearNotes = () => {
+    const savedNotes = JSON.parse(localStorage.getItem('user_notes') || '{}');
+    delete savedNotes[dateKey];
+    localStorage.setItem('user_notes', JSON.stringify(savedNotes));
+    setCurrentDate(new Date(currentDate));
+  };
+
   return (
     <Layout 
       onNavigate={setCurrentView} 
@@ -65,6 +96,7 @@ function App() {
     >
       <div className="flex flex-col items-center gap-6 w-full">
         
+        {/* === WIDOK 1: STRONA GŁÓWNA === */}
         {currentView === 'home' && (
           <div className="w-full flex flex-col items-center gap-8 animate-in fade-in duration-300">
             
@@ -92,46 +124,66 @@ function App() {
             </div>
 
             <div className="flex flex-col gap-10 items-center justify-center w-full max-w-3xl">
+              {/* Karta Dnia */}
               <div className="w-full flex justify-center">
-                <DailyCard currentDate={currentDate} options={viewOptions} />
+                <DailyCard 
+                  currentDate={currentDate} 
+                  options={viewOptions} 
+                />
               </div>
+
+             
               
+              {/* Kalendarz Siatkowy */}
               {showCalendar && (
                 <div className="w-full flex justify-center animate-in slide-in-from-bottom-4 duration-500 fade-in">
-                  <CalendarGrid currentDate={currentDate} onDateSelect={(date) => setCurrentDate(date)} />
+                  <CalendarGrid 
+                    currentDate={currentDate} 
+                    onDateSelect={(date) => setCurrentDate(date)} 
+                  />
                 </div>
               )}
             </div>
           </div>
         )}
 
+        {/* === WIDOK 2: WYSZUKIWARKA === */}
         {currentView === 'search' && (
           <div className="w-full max-w-2xl px-4 animate-in slide-in-from-right-8 duration-300 pt-4">
              <NameSearch onSelectDate={handleNavigateToDate} />
           </div>
         )}
 
+        {/* === WIDOK 3: NADCHODZĄCE === */}
         {currentView === 'upcoming' && (
           <div className="w-full max-w-2xl px-4 animate-in slide-in-from-right-8 duration-300 pt-4">
              <UpcomingEvents onSelectDate={handleNavigateToDate} />
              <div className="text-center mt-8">
-                <button onClick={() => setCurrentView('home')} className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline p-2 transition-colors">
+                <button 
+                  onClick={() => setCurrentView('home')}
+                  className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline p-2 transition-colors"
+                >
                   Wróć do kalendarza
                 </button>
              </div>
           </div>
         )}
 
+        {/* === WIDOK 4: NIETYPOWE === */}
         {currentView === 'unusual' && (
           <div className="w-full max-w-3xl mx-auto px-4 animate-in slide-in-from-right-8 duration-300 pt-4">
              <UnusualHolidays />
              <div className="text-center mt-8">
-                <button onClick={() => setCurrentView('home')} className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline p-2 transition-colors">
+                <button 
+                  onClick={() => setCurrentView('home')}
+                  className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline p-2 transition-colors"
+                >
                   Wróć do kalendarza
                 </button>
              </div>
           </div>
         )}
+
       </div>
     </Layout>
   );
