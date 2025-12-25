@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 
 // Importy komponentów
@@ -10,21 +10,35 @@ import UnusualHolidays from './components/UnusualHolidays';
 import Layout, { type ViewState } from './components/Layout';
 
 function App() {
-  // Stan daty i kalendarza
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(true);
-  
-  // Stan widoku (domyślnie strona główna)
   const [currentView, setCurrentView] = useState<ViewState>('home');
 
-  // Opcje Astro (przekazywane z Layoutu do DailyCard)
+  // Stan opcji astro
   const [viewOptions, setViewOptions] = useState({
     showMoon: false,
     showZodiac: false,
     showSun: false,
   });
 
-  // --- FUNKCJE POMOCNICZE ---
+  // --- LOGIKA TRYBU CIEMNEGO ---
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  });
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
+  // -----------------------------
 
   const toggleOption = (key: keyof typeof viewOptions) => {
     setViewOptions(prev => ({ ...prev, [key]: !prev[key] }));
@@ -36,35 +50,34 @@ function App() {
     setCurrentDate(newDate);
   };
 
-  const handleDateSelectFromSearch = (date: Date) => {
+  const handleNavigateToDate = (date: Date) => {
     setCurrentDate(date);
-    setCurrentView('home'); // Powrót do głównego widoku po wybraniu daty
+    setCurrentView('home'); 
   };
-
-  // --- RENDEROWANIE ---
 
   return (
     <Layout 
       onNavigate={setCurrentView} 
       options={viewOptions} 
       toggleOption={toggleOption}
+      isDarkMode={isDarkMode}
+      toggleDarkMode={toggleDarkMode}
     >
-      <div className="flex flex-col items-center gap-6 pt-4 pb-20 w-full">
+      <div className="flex flex-col items-center gap-6 w-full">
         
-        {/* === WIDOK 1: STRONA GŁÓWNA (KALENDARZ) === */}
         {currentView === 'home' && (
           <div className="w-full flex flex-col items-center gap-8 animate-in fade-in duration-300">
             
-            {/* Pasek Daty ze strzałkami */}
-            <div className="flex items-center gap-2 md:gap-4 bg-white p-1.5 md:p-2 rounded-full shadow-sm border border-slate-200">
-              <button onClick={() => changeDate(-1)} className="p-2 hover:bg-slate-100 rounded-full text-slate-600">
+            {/* Pasek Daty */}
+            <div className="flex items-center gap-2 md:gap-4 bg-white dark:bg-slate-800 p-1.5 md:p-2 rounded-full shadow-sm border border-slate-200 dark:border-slate-700 mt-4 transition-colors">
+              <button onClick={() => changeDate(-1)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-600 dark:text-slate-300 transition-colors">
                 <ChevronLeft size={24} />
               </button>
               
               <button 
                 onClick={() => setShowCalendar(!showCalendar)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
-                  showCalendar ? 'bg-indigo-50 text-indigo-700' : 'hover:bg-slate-50 text-slate-700'
+                  showCalendar ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300' : 'hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
                 }`}
               >
                 <CalendarIcon size={16} />
@@ -73,61 +86,52 @@ function App() {
                 </span>
               </button>
               
-              <button onClick={() => changeDate(1)} className="p-2 hover:bg-slate-100 rounded-full text-slate-600">
+              <button onClick={() => changeDate(1)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-600 dark:text-slate-300 transition-colors">
                 <ChevronRight size={24} />
               </button>
             </div>
 
-            {/* Główna sekcja: Karta + Kalendarz Siatkowy */}
-            <div className="flex flex-col lg:flex-row gap-8 items-start justify-center w-full max-w-5xl">
-              <div className="w-full lg:w-1/2 flex justify-center lg:justify-end">
-                <DailyCard 
-                  currentDate={currentDate} 
-                  options={viewOptions} 
-                />
+            <div className="flex flex-col gap-10 items-center justify-center w-full max-w-3xl">
+              <div className="w-full flex justify-center">
+                <DailyCard currentDate={currentDate} options={viewOptions} />
               </div>
               
               {showCalendar && (
-                <div className="w-full lg:w-1/2 flex justify-center lg:justify-start">
-                  <CalendarGrid 
-                    currentDate={currentDate} 
-                    onDateSelect={(date) => setCurrentDate(date)} 
-                  />
+                <div className="w-full flex justify-center animate-in slide-in-from-bottom-4 duration-500 fade-in">
+                  <CalendarGrid currentDate={currentDate} onDateSelect={(date) => setCurrentDate(date)} />
                 </div>
               )}
             </div>
-
-            {/* === NOWA SEKCJA: ŚWIĘTA NIETYPOWE === */}
-            <div className="w-full max-w-5xl px-4 lg:px-0">
-               <UnusualHolidays />
-            </div>
-
           </div>
         )}
 
-        {/* === WIDOK 2: WYSZUKIWARKA IMIENIN === */}
         {currentView === 'search' && (
-          <div className="w-full px-4 animate-in slide-in-from-right-8 duration-300">
-             <NameSearch onSelectDate={handleDateSelectFromSearch} />
+          <div className="w-full max-w-2xl px-4 animate-in slide-in-from-right-8 duration-300 pt-4">
+             <NameSearch onSelectDate={handleNavigateToDate} />
           </div>
         )}
 
-        {/* === WIDOK 3: NAJBLIŻSZE ŚWIĘTA === */}
         {currentView === 'upcoming' && (
-          <div className="w-full px-4 animate-in slide-in-from-right-8 duration-300 pt-4">
-             <UpcomingEvents />
-             
+          <div className="w-full max-w-2xl px-4 animate-in slide-in-from-right-8 duration-300 pt-4">
+             <UpcomingEvents onSelectDate={handleNavigateToDate} />
              <div className="text-center mt-8">
-                <button 
-                  onClick={() => setCurrentView('home')}
-                  className="text-indigo-600 font-medium hover:underline p-2"
-                >
+                <button onClick={() => setCurrentView('home')} className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline p-2 transition-colors">
                   Wróć do kalendarza
                 </button>
              </div>
           </div>
         )}
 
+        {currentView === 'unusual' && (
+          <div className="w-full max-w-3xl mx-auto px-4 animate-in slide-in-from-right-8 duration-300 pt-4">
+             <UnusualHolidays />
+             <div className="text-center mt-8">
+                <button onClick={() => setCurrentView('home')} className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline p-2 transition-colors">
+                  Wróć do kalendarza
+                </button>
+             </div>
+          </div>
+        )}
       </div>
     </Layout>
   );

@@ -1,8 +1,18 @@
 import React, { useState } from 'react';
-import { Menu, X, Calendar, Search, Moon, Sun, Star, Clock, ChevronRight, PartyPopper } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Menu, 
+  X, 
+  Calendar as CalendarIcon, 
+  Search, 
+  Clock, 
+  Moon, 
+  Sun, 
+  Star,
+  Gift 
+} from 'lucide-react';
+import { cn } from '../lib/utils';
+import { Button } from './ui/button';
 
-// AKTUALIZACJA TYPU WIDOKU (dodano 'unusual')
 export type ViewState = 'home' | 'search' | 'upcoming' | 'unusual';
 
 interface LayoutProps {
@@ -14,203 +24,157 @@ interface LayoutProps {
     showSun: boolean;
   };
   toggleOption: (key: 'showMoon' | 'showZodiac' | 'showSun') => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
 }
 
-const Layout = ({ children, onNavigate, options, toggleOption }: LayoutProps) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+const Layout: React.FC<LayoutProps> = ({ 
+  children, 
+  onNavigate, 
+  options, 
+  toggleOption,
+  isDarkMode,
+  toggleDarkMode
+}) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const handleNav = (view: ViewState) => {
+  const handleNavigate = (view: ViewState) => {
     onNavigate(view);
-    setIsMenuOpen(false);
+    setIsSidebarOpen(false);
   };
 
   return (
-    <div className="min-h-screen font-sans text-slate-900 overflow-x-hidden selection:bg-indigo-200">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 flex flex-col">
       
-      {/* NAVBAR GLASS */}
-      <nav className="sticky top-0 z-40 bg-white/70 backdrop-blur-md border-b border-white/50 shadow-sm transition-all">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex justify-between items-center">
-          
-          {/* Logo */}
-          <div 
-            onClick={() => handleNav('home')} 
-            className="flex items-center gap-3 cursor-pointer group"
-          >
-            {/* Ikona Logo - Gradient */}
-            <div className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white p-2.5 rounded-xl shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300">
-              <Calendar size={20} className="drop-shadow-sm" />
-            </div>
-            <span className="font-bold text-xl tracking-tight text-slate-800 font-serif">
-              Kalendarz<span className="text-indigo-600">.PL</span>
-            </span>
-          </div>
+      {/* HEADER */}
+      <div className="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 z-40 flex items-center justify-between px-4 shadow-sm transition-colors">
+        <button 
+          onClick={() => setIsSidebarOpen(true)}
+          className="p-2 -ml-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
 
-          {/* Hamburger */}
-          <button
-            onClick={() => setIsMenuOpen(true)}
-            className="p-2.5 text-slate-600 bg-white/50 hover:bg-white hover:text-indigo-600 rounded-xl border border-transparent hover:border-indigo-100 transition-all shadow-sm active:scale-95"
+        {/* LOGO: święta.mobi - Poprawiony kontrast w trybie jasnym */}
+        <div className="font-black text-xl flex items-center gap-0 select-none tracking-tighter">
+          <span className="text-indigo-900 dark:text-indigo-400">święta</span>
+          <span className="text-slate-500 dark:text-slate-500 font-bold">.mobi</span>
+        </div>
+
+        <div className="w-6" />
+      </div>
+
+      {/* OVERLAY */}
+      <div 
+        className={cn(
+          "fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-300",
+          isSidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        )}
+        onClick={() => setIsSidebarOpen(false)}
+      />
+
+      {/* SIDEBAR */}
+      <div 
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-80 bg-white dark:bg-slate-800 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col border-r border-transparent dark:border-slate-700",
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700 bg-indigo-50/50 dark:bg-indigo-900/20 h-16 transition-colors">
+          <div className="font-black text-xl flex items-center gap-0 select-none tracking-tighter">
+            <span className="text-indigo-900 dark:text-indigo-300">święta</span>
+            <span className="text-indigo-600 dark:text-indigo-500 font-bold">.mobi</span>
+          </div>
+          <button 
+            onClick={() => setIsSidebarOpen(false)}
+            className="p-2 text-indigo-900 dark:text-indigo-200 hover:bg-indigo-100 dark:hover:bg-indigo-800 rounded-full transition-colors"
           >
-            <Menu size={24} />
+            <X className="h-5 w-5" />
           </button>
         </div>
-      </nav>
 
-      {/* SIDEBAR GLASS */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsMenuOpen(false)}
-              className="fixed inset-0 bg-slate-900/20 backdrop-blur-[3px] z-50"
-            />
+        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <div className="space-y-1">
+            <Button variant="ghost" className="w-full justify-start gap-3 text-base h-12 dark:text-slate-500 dark:hover:bg-slate-200" onClick={() => handleNavigate('home')}>
+              <CalendarIcon size={20} className="text-slate-500 dark:text-slate-400" /> Strona Główna
+            </Button>
+            <Button variant="ghost" className="w-full justify-start gap-3 text-base h-12 dark:text-slate-500 dark:hover:bg-slate-200" onClick={() => handleNavigate('search')}>
+              <Search size={20} className="text-slate-500 dark:text-slate-400" /> Szukaj Imienin
+            </Button>
+            <Button variant="ghost" className="w-full justify-start gap-3 text-base h-12 dark:text-slate-500 dark:hover:bg-slate-200" onClick={() => handleNavigate('upcoming')}>
+              <Clock size={20} className="text-slate-500 dark:text-slate-400" /> Nadchodzące
+            </Button>
+            <Button variant="ghost" className="w-full justify-start gap-3 text-base h-12 dark:text-slate-500 dark:hover:bg-slate-200" onClick={() => handleNavigate('unusual')}>
+              <Gift size={20} className="text-slate-500 dark:text-slate-400" /> Święta Nietypowe
+            </Button>
+          </div>
+          
+          <div className="my-6 border-t border-slate-100 dark:border-slate-700" />
+          
+          <div className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 px-2">
+            Wygląd
+          </div>
+          <button 
+            onClick={() => toggleDarkMode()}
+            className="w-full flex items-center justify-between px-3 py-3 rounded-lg text-sm bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all"
+          >
+            <div className="flex items-center gap-3">
+              {isDarkMode ? <Sun size={18} className="text-orange-400" /> : <Moon size={18} className="text-indigo-400" />}
+              <span>{isDarkMode ? 'Tryb Jasny' : 'Tryb Ciemny'}</span>
+            </div>
+            <div className={cn(
+              "w-10 h-5 rounded-full relative transition-colors duration-300",
+              isDarkMode ? "bg-indigo-600" : "bg-slate-300"
+            )}>
+              <div className={cn(
+                "absolute top-1 w-3 h-3 bg-white rounded-full transition-all duration-300",
+                isDarkMode ? "left-6" : "left-1"
+              )} />
+            </div>
+          </button>
 
-            {/* Panel Boczny */}
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 right-0 w-[85%] max-w-sm bg-white/90 backdrop-blur-2xl z-50 shadow-2xl flex flex-col border-l border-white/60"
-            >
-              {/* Header Menu */}
-              <div className="p-6 flex justify-between items-center border-b border-indigo-50/50">
-                <span className="font-serif font-bold text-2xl text-slate-800 tracking-tight">Menu</span>
-                <button 
-                  onClick={() => setIsMenuOpen(false)}
-                  className="p-2 bg-slate-100 hover:bg-rose-100 text-slate-400 hover:text-rose-500 rounded-full transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
+          <div className="my-6 border-t border-slate-100 dark:border-slate-700" />
+          
+          <div className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 px-2">
+            Dodatki Astro
+          </div>
+          <div className="space-y-2">
+            <OptionBtn active={options.showMoon} onClick={() => toggleOption('showMoon')} icon={<Moon size={18} />} label="Fazy Księżyca" colorClass="bg-indigo-500" />
+            <OptionBtn active={options.showSun} onClick={() => toggleOption('showSun')} icon={<Sun size={18} />} label="Wschód / Zachód" colorClass="bg-orange-500" />
+            <OptionBtn active={options.showZodiac} onClick={() => toggleOption('showZodiac')} icon={<Star size={18} />} label="Znak Zodiaku" colorClass="bg-purple-500" />
+          </div>
+        </nav>
 
-              {/* Treść */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-8">
-                
-                {/* Sekcja: Widoki */}
-                <div className="space-y-4">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1 mb-2">Nawigacja</p>
-                  
-                  {[
-                    { 
-                      id: 'home', 
-                      label: 'Kalendarz Główny', 
-                      icon: Calendar, 
-                      color: 'text-indigo-600', 
-                      bg: 'bg-indigo-50' 
-                    },
-                    { 
-                      id: 'search', 
-                      label: 'Wyszukiwarka Imienin', 
-                      icon: Search, 
-                      color: 'text-purple-600', 
-                      bg: 'bg-purple-50' 
-                    },
-                    { 
-                      id: 'upcoming', 
-                      label: 'Najbliższe Święta', 
-                      icon: Clock, 
-                      color: 'text-rose-600', 
-                      bg: 'bg-rose-50' 
-                    },
-                    // NOWA POZYCJA
-                    { 
-                      id: 'unusual', 
-                      label: 'Święta Nietypowe', 
-                      icon: PartyPopper, 
-                      color: 'text-amber-600', 
-                      bg: 'bg-amber-50' 
-                    },
-                  ].map((item) => (
-                    <button 
-                      key={item.id}
-                      onClick={() => handleNav(item.id as ViewState)}
-                      className="group flex items-center justify-between w-full p-3 rounded-2xl bg-white/60 hover:bg-white border border-white/60 hover:border-indigo-100 shadow-sm hover:shadow-md transition-all duration-300"
-                    >
-                      <div className="flex items-center gap-4">
-                        {/* Ikona na pastelowym tle z kolorem */}
-                        <div className={`p-2.5 rounded-xl ${item.bg} ${item.color} group-hover:scale-110 transition-transform duration-300`}>
-                          <item.icon size={20} />
-                        </div>
-                        <span className="text-slate-700 font-medium group-hover:text-slate-900 group-hover:font-semibold transition-all">
-                          {item.label}
-                        </span>
-                      </div>
-                      <ChevronRight size={16} className="text-slate-300 group-hover:text-indigo-400 transition-colors" />
-                    </button>
-                  ))}
-                </div>
+        <div className="p-4 bg-slate-50 dark:bg-slate-800/50 text-xs text-center text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-700 transition-colors">
+          święta.mobi • {new Date().getFullYear()}
+        </div>
+      </div>
 
-                <div className="h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
-
-                {/* Sekcja: Dodatki */}
-                <div className="space-y-4">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1 mb-2">Personalizacja widoku</p>
-                  
-                  {/* Fazy Księżyca */}
-                  <div className="group flex items-center justify-between p-3 rounded-2xl bg-white/40 hover:bg-white/80 border border-transparent hover:border-indigo-100 transition-all shadow-sm">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                        <Moon size={18}/>
-                      </div>
-                      <span className="font-medium text-slate-700 text-sm">Fazy Księżyca</span>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" checked={options.showMoon} onChange={() => toggleOption('showMoon')} className="sr-only peer" />
-                      <div className="w-10 h-5 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
-                    </label>
-                  </div>
-
-                  {/* Znaki Zodiaku */}
-                  <div className="group flex items-center justify-between p-3 rounded-2xl bg-white/40 hover:bg-white/80 border border-transparent hover:border-purple-100 transition-all shadow-sm">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                        <Star size={18}/>
-                      </div>
-                      <span className="font-medium text-slate-700 text-sm">Zodiak</span>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" checked={options.showZodiac} onChange={() => toggleOption('showZodiac')} className="sr-only peer" />
-                      <div className="w-10 h-5 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
-                    </label>
-                  </div>
-
-                  {/* Słońce */}
-                  <div className="group flex items-center justify-between p-3 rounded-2xl bg-white/40 hover:bg-white/80 border border-transparent hover:border-amber-100 transition-all shadow-sm">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-amber-50 text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                        <Sun size={18}/>
-                      </div>
-                      <span className="font-medium text-slate-700 text-sm">Słońce</span>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" checked={options.showSun} onChange={() => toggleOption('showSun')} className="sr-only peer" />
-                      <div className="w-10 h-5 bg-slate-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
-                    </label>
-                  </div>
-
-                </div>
-              </div>
-              
-              {/* Footer */}
-              <div className="p-6 border-t border-indigo-50/50 bg-white/30 text-center">
-                 <p className="text-xs text-slate-400 font-medium">
-                   Zaprojektowano z <span className="text-rose-400">❤</span> dla Ciebie
-                 </p>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      <main className="container max-w-5xl mx-auto px-4 py-6 min-h-[calc(100vh-64px)]">
-        {children}
+      <main className="flex-1 min-h-screen pt-16">
+        <div className="h-full w-full max-w-7xl mx-auto p-4 md:p-8">
+          {children}
+        </div>
       </main>
     </div>
   );
 };
+
+const OptionBtn = ({ active, onClick, icon, label, colorClass }: any) => (
+  <button 
+    onClick={onClick}
+    className={cn(
+      "w-full flex items-center justify-between px-3 py-3 rounded-lg text-sm transition-all border",
+      active 
+        ? "bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm border-slate-200 dark:border-slate-600 font-medium" 
+        : "bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-slate-100 dark:hover:bg-slate-700"
+    )}
+  >
+    <div className="flex items-center gap-3">
+      {icon}
+      <span>{label}</span>
+    </div>
+    <div className={cn("w-2.5 h-2.5 rounded-full transition-colors", active ? colorClass : "bg-slate-200 dark:bg-slate-600")} />
+  </button>
+);
 
 export default Layout;

@@ -115,7 +115,7 @@ const DailyCard = ({ currentDate, options }: DailyCardProps) => {
             <h1 className="text-[8rem] leading-[0.8] font-serif text-indigo-900 drop-shadow-md select-none">
               {dayNumber}
             </h1>
-            <span className="absolute top-2 -right-4 text-5xl text-indigo-400 font-serif opacity-60">.</span>
+            <span className="absolute top-2 -right-4 text-5xl text-indigo-400 font-serif opacity-60"></span>
           </div>
           
           <div className="mt-4">
