@@ -45,12 +45,14 @@ export const getMoonPhase = (date: Date): string => {
 };
 
 // 3. WSCHÓD / ZACHÓD (Przybliżenie dla Polski - Warszawa)
+// Bez zewnętrznego API to jest symulacja zależna od miesiąca
 export const getSunTimes = (date: Date): { sunrise: string, sunset: string } => {
+  // Prosta tabela przybliżona dla środka każdego miesiąca
   const times = [
     { s: "07:42", e: "15:45" }, // Styczeń
     { s: "06:55", e: "16:40" }, // Luty
     { s: "05:55", e: "17:35" }, // Marzec
-    { s: "05:40", e: "19:30" }, // Kwiecień
+    { s: "05:40", e: "19:30" }, // Kwiecień (zmiana czasu uwzgl. w uproszczeniu)
     { s: "04:45", e: "20:20" }, // Maj
     { s: "04:15", e: "21:00" }, // Czerwiec
     { s: "04:35", e: "20:50" }, // Lipiec
@@ -63,23 +65,5 @@ export const getSunTimes = (date: Date): { sunrise: string, sunset: string } => 
   return {
     sunrise: times[date.getMonth()].s,
     sunset: times[date.getMonth()].e
-  };
-};
-
-// === NOWA FUNKCJA ZBIORCZA DLA DAILYCARD ===
-export interface AstroData {
-  moonPhase: string;
-  zodiacSign: string;
-  sunrise: string;
-  sunset: string;
-}
-
-export const getAstroData = (date: Date): AstroData => {
-  const sunTimes = getSunTimes(date);
-  return {
-    moonPhase: getMoonPhase(date),
-    zodiacSign: getZodiacSign(date),
-    sunrise: sunTimes.sunrise,
-    sunset: sunTimes.sunset
   };
 };
