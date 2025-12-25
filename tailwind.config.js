@@ -1,10 +1,8 @@
 /** @type {import('tailwindcss').Config} */
-export default {
- // To jest najważniejsza linia:
-  darkMode: 'class', 
+export default {darkMode: 'class', // BEZ TEGO NIE RUSZY
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}", // Sprawdź, czy ścieżka do src jest poprawna
   ],
   theme: {
     extend: {},
