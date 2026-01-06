@@ -69,21 +69,23 @@ const Layout: React.FC<LayoutProps> = ({
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 flex flex-col">
       
       {/* HEADER */}
-      <div className="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 z-40 flex items-center justify-between px-4 shadow-sm transition-colors">
-        <button 
-          onClick={() => setIsSidebarOpen(true)}
-          className="p-2 -ml-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors"
-        >
-          <Menu className="h-6 w-6" />
-        </button>
+      <div className="fixed top-0 left-0 right-0 z-40 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm transition-colors pt-[env(safe-area-inset-top)]">
+        <div className="h-16 flex items-center justify-between px-4">
+          <button 
+            onClick={() => setIsSidebarOpen(true)}
+            className="p-2 -ml-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors"
+          >
+            <Menu className="h-6 w-6" />
+          </button>
 
-        {/* LOGO: święta.mobi - Poprawiony kontrast w trybie jasnym */}
-        <div className="font-black text-xl flex items-center gap-0 select-none tracking-tighter">
-          <span className="text-indigo-900 dark:text-indigo-400">święta</span>
-          <span className="text-slate-500 dark:text-slate-500 font-bold">.mobi</span>
+          {/* LOGO: święta.mobi - Poprawiony kontrast w trybie jasnym */}
+          <div className="font-black text-xl flex items-center gap-0 select-none tracking-tighter">
+            <span className="text-indigo-900 dark:text-indigo-400">święta</span>
+            <span className="text-slate-500 dark:text-slate-500 font-bold">.mobi</span>
+          </div>
+
+          <div className="w-6" />
         </div>
-
-        <div className="w-6" />
       </div>
 
       {/* OVERLAY */}
@@ -98,7 +100,7 @@ const Layout: React.FC<LayoutProps> = ({
       {/* SIDEBAR */}
       <div 
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-80 bg-white dark:bg-slate-800 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col border-r border-transparent dark:border-slate-700",
+          "fixed inset-y-0 left-0 z-50 w-80 bg-white dark:bg-slate-800 shadow-2xl transform transition-transform duration-300 ease-out flex flex-col border-r border-transparent dark:border-slate-700 pt-[env(safe-area-inset-top)]",
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -172,7 +174,7 @@ const Layout: React.FC<LayoutProps> = ({
         </div>
       </div>
 
-      <main className="flex-1 min-h-screen pt-16">
+      <main className="flex-1 min-h-screen pt-[calc(4rem+env(safe-area-inset-top))]">
         <div className="h-full w-full max-w-7xl mx-auto p-4 md:p-8">
           {children}
         </div>

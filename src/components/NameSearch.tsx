@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Search, ArrowRight, User, Sparkles } from 'lucide-react';
+import { Search, ArrowRight, User, Sparkles, Plus } from 'lucide-react';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import namedaysData from '../data/namedays.json';
 
 const parseDateKey = (key: string) => {
@@ -33,9 +34,58 @@ const NameSearch = ({ onSelectDate }: NameSearchProps) => {
     setResults(filtered);
   }, [query]);
 
+  const scheduleNotification = async (date: Date, names: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation when clicking the bell
+
+    try {
+      let permStatus = await LocalNotifications.checkPermissions();
+
+      if (permStatus.display === 'prompt') {
+        permStatus = await LocalNotifications.requestPermissions();
+      }
+
+      if (permStatus.display !== 'granted') {
+        alert('Aplikacja potrzebuje uprawnień do wysyłania powiadomień.');
+        return;
+      }
+
+      // Ustaw godzinę 8:00
+      const notificationDate = new Date(date);
+      notificationDate.setHours(8, 0, 0, 0);
+
+      // Jeśli ta data już była w tym roku, ustaw na przyszły rok
+      if (notificationDate.getTime() < Date.now()) {
+        notificationDate.setFullYear(notificationDate.getFullYear() + 1);
+      }
+
+      const id = Math.floor(Math.random() * 100000) + 1; // Proste ID
+
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            title: `Dzisiaj imieniny!`,
+            body: `Imieniny obchodzi: ${query} (i inni: ${names}). Nie zapomnij o życzeniach!`,
+            id: id,
+            schedule: { at: notificationDate },
+            sound: undefined,
+            attachments: undefined,
+            actionTypeId: "",
+            extra: null
+          }
+        ]
+      });
+
+      alert(`Ustawiono przypomnienie na ${notificationDate.toLocaleDateString()} o godzinie 8:00`);
+
+    } catch (error) {
+      console.error("Błąd powiadomień:", error);
+      alert("Nie udało się ustawić powiadomienia (sprawdź czy jesteś na urządzeniu mobilnym).");
+    }
+  };
+
   return (
     <div className="w-full max-w-2xl mx-auto bg-white/60 backdrop-blur-2xl rounded-[40px] shadow-2xl border border-white/60 overflow-hidden flex flex-col min-h-[500px]">
-      
+
       {/* HEADER */}
       <div className="p-8 border-b border-indigo-100/50 bg-white/40">
         <h2 className="text-2xl font-serif font-bold text-indigo-950 mb-6 flex items-center gap-3">
@@ -44,7 +94,7 @@ const NameSearch = ({ onSelectDate }: NameSearchProps) => {
           </div>
           Znajdź imieniny
         </h2>
-        
+
         <div className="relative group">
           <input
             type="text"
@@ -80,8 +130,17 @@ const NameSearch = ({ onSelectDate }: NameSearchProps) => {
                       {item.names}
                     </span>
                   </div>
-                  <div className="p-2 bg-white rounded-full text-indigo-200 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all">
-                    <ArrowRight size={20} />
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => scheduleNotification(dateObj, item.names, e)}
+                      className="p-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl transition-colors"
+                      title="Dodaj przypomnienie"
+                    >
+                      <Plus size={20} />
+                    </button>
+                    <div className="p-2 bg-white rounded-full text-indigo-200 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all">
+                      <ArrowRight size={20} />
+                    </div>
                   </div>
                 </button>
               );

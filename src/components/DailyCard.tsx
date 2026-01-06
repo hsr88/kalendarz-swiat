@@ -4,7 +4,7 @@ import { pl } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import { Gift, Sparkles, Moon, Star, Sunrise, Sunset, Quote } from 'lucide-react';
 import namedaysData from '../data/namedays.json';
-import quotesData from '../data/quotes.json'; // <--- NOWY IMPORT BAZY CYTATÓW
+import quotesData from '../data/quotes.json';
 import { getMoonPhase, getZodiacSign, getSunTimes } from '../utils/astroHelpers';
 
 // --- TYPY ---
@@ -42,11 +42,16 @@ const fetchHolidaysAPI = async (date: Date): Promise<string[]> => {
 
 interface DailyCardProps {
   currentDate: Date;
-  options: { showMoon: boolean; showZodiac: boolean; showSun: boolean; };
+  options: { 
+    showMoon: boolean; 
+    showZodiac: boolean; 
+    showSun: boolean; 
+  };
+  onDataLoaded?: (date: Date, names: string, holiday: string) => void; // DODANE: Definicja propa
 }
 
 // --- KOMPONENT ---
-const DailyCard = ({ currentDate, options }: DailyCardProps) => {
+const DailyCard = ({ currentDate, options, onDataLoaded }: DailyCardProps) => {
   const [data, setData] = useState<DailyData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -55,10 +60,7 @@ const DailyCard = ({ currentDate, options }: DailyCardProps) => {
       setLoading(true);
       
       const nameDays = getNameDay(currentDate);
-      
-      // NOWE: Losowanie z dużej bazy JSON
       const randomQuote = quotesData[Math.floor(Math.random() * quotesData.length)];
-      
       const holidays = await fetchHolidaysAPI(currentDate);
       
       const astroData = {
@@ -69,9 +71,14 @@ const DailyCard = ({ currentDate, options }: DailyCardProps) => {
 
       setData({ date: currentDate, holidays, nameDays, quote: randomQuote, astro: astroData });
       setLoading(false);
+      
+      // POPRAWIONE: Wywołanie funkcji przekazanej z App.tsx
+      if (onDataLoaded) {
+        onDataLoaded(currentDate, nameDays, holidays[0] || "");
+      }
     };
     loadData();
-  }, [currentDate]);
+  }, [currentDate, onDataLoaded]); // Dodane onDataLoaded do zależności
 
   if (loading) {
     return (
@@ -100,22 +107,17 @@ const DailyCard = ({ currentDate, options }: DailyCardProps) => {
       transition={{ type: "spring", stiffness: 100, damping: 20 }}
       className="relative w-full max-w-md group"
     >
-      {/* Glow Effect */}
       <div className="absolute -inset-1 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-[45px] blur-xl opacity-20 group-hover:opacity-30 transition duration-1000"></div>
 
-      {/* Główna Karta */}
       <div className="relative bg-white/60 backdrop-blur-2xl rounded-[40px] shadow-xl overflow-hidden border border-white/60">
         
-        {/* HEADER */}
         <div className="pt-10 pb-6 px-8 text-center relative">
           <span className="block text-indigo-900/40 text-sm font-bold tracking-[0.3em] uppercase mb-2">{year}</span>
           
           <div className="relative inline-block">
-            {/* Solidny kolor dla czytelności */}
             <h1 className="text-[8rem] leading-[0.8] font-serif text-indigo-900 drop-shadow-md select-none">
               {dayNumber}
             </h1>
-            <span className="absolute top-2 -right-4 text-5xl text-indigo-400 font-serif opacity-60"></span>
           </div>
           
           <div className="mt-4">
@@ -128,10 +130,7 @@ const DailyCard = ({ currentDate, options }: DailyCardProps) => {
           </div>
         </div>
 
-        {/* TREŚĆ */}
         <div className="px-8 pb-10 space-y-8">
-          
-          {/* Sekcja Astro */}
           {showAstroSection && (
             <div className="grid grid-cols-2 gap-3 bg-white/40 p-4 rounded-3xl border border-white/40 shadow-sm">
                {options.showMoon && (
@@ -163,7 +162,6 @@ const DailyCard = ({ currentDate, options }: DailyCardProps) => {
             </div>
           )}
 
-          {/* Święta */}
           <div className="relative group/holiday">
              <div className="absolute left-3 top-0 bottom-0 w-[2px] bg-amber-300/50 group-hover/holiday:bg-amber-400 transition-colors"></div>
              <div className="pl-8">
@@ -180,7 +178,6 @@ const DailyCard = ({ currentDate, options }: DailyCardProps) => {
              </div>
           </div>
 
-          {/* Imieniny */}
           <div className="relative group/name">
              <div className="absolute left-3 top-0 bottom-0 w-[2px] bg-emerald-300/50 group-hover/name:bg-emerald-400 transition-colors"></div>
              <div className="pl-8">
@@ -193,7 +190,6 @@ const DailyCard = ({ currentDate, options }: DailyCardProps) => {
              </div>
           </div>
 
-          {/* Cytat */}
           <div className="bg-indigo-50/40 p-6 rounded-3xl border border-indigo-100/30 relative">
             <Quote className="absolute top-4 left-4 text-indigo-300 w-6 h-6 opacity-40 transform -scale-x-100" />
             <p className="text-center text-indigo-900/90 italic font-serif text-lg leading-relaxed pt-2">
@@ -203,7 +199,6 @@ const DailyCard = ({ currentDate, options }: DailyCardProps) => {
               {data.quote.author}
             </p>
           </div>
-
         </div>
       </div>
     </motion.div>
